@@ -62,12 +62,20 @@ describe('voicemail logging', function() {
           name: opts.name,
           src: opts.src,
           streams: opts.streams,
+          serializers: opts.serializers,
 
           child: function(opts) {
             this.component = opts.component;
 
             return this;
-          }
+          },
+
+          trace: function() {},
+          debug: function() {},
+          info: function() {},
+          warn: function() {},
+          error: function() {},
+          fatal: function() {},
         };
       },
 
@@ -117,6 +125,126 @@ describe('voicemail logging', function() {
 
     assert(info.length === 2);
     assert(error.length === 2);
+
+    done();
+  });
+
+  it('should have all serializers', function(done) {
+    var logger = require('../lib/logging.js');
+
+    var log = logger.create(getMockConfig(), 'test');
+
+    var result = log.serializers.query({text: 'test', values: 'it'});
+    assert(result.query.text === 'test' && result.query.values === 'it');
+
+    result = log.serializers.channel({id: '1', name: 'alice'});
+    assert(result.channel.id === '1' && result.channel.name === 'alice');
+
+    result = log.serializers.playback({
+      'media_uri': 'uri',
+      'target_uri': 'channel'
+    });
+    assert(result.playback.media === 'uri' &&
+           result.playback.target === 'channel');
+
+    result = log.serializers.recording({
+      name: 'recording',
+      'target_uri': 'channel'
+    });
+    assert(result.recording.name === 'recording' &&
+           result.recording.target === 'channel');
+
+    result = log.serializers.message({
+      getId: function() {return 1;},
+      getMailbox: function() {return {getId: function() {return 2;}};},
+      getFolder: function() {return {getId: function() {return 3;}};},
+      date: {
+        format: function() {return 'now';}
+      },
+      read: false,
+      callerId: 'me',
+      duration: 1,
+      recording: 'recording'
+    });
+    assert(result.message.id === 1 &&
+           result.message.mailboxId === 2 &&
+           result.message.folderId === 3 &&
+           result.message.date === 'now' &&
+           result.message.read === false,
+           result.message.duration === 1 &&
+           result.message.recording === 'recording');
+
+    result = log.serializers.context({
+      getId: function() {return 1;},
+      domain: 'email.com'
+    });
+    assert(result.context.id === 1 && result.context.domain === 'email.com');
+
+    result = log.serializers.contextConfig({
+      getId: function() {return 1;},
+      key: 'config key',
+      value: 'config value'
+    });
+    assert(result.contextConfig.id === 1 &&
+           result.contextConfig.key === 'config key' &&
+           result.contextConfig.value === 'config value');
+
+    result = log.serializers.contextConfigs([{
+      getId: function() {return 1;}
+    }, {
+      getId: function() {return 2;}
+    }]);
+    assert(result.ids[0] === 1 && result.ids[1] === 2);
+
+    result = log.serializers.mailboxConfig({
+      getId: function() {return 1;},
+      key: 'config key',
+      value: 'config value'
+    });
+    assert(result.mailboxConfig.id === 1 &&
+           result.mailboxConfig.key === 'config key' &&
+           result.mailboxConfig.value === 'config value');
+
+    result = log.serializers.mailboxConfigs([{
+      getId: function() {return 1;}
+    }, {
+      getId: function() {return 2;}
+    }]);
+    assert(result.ids[0] === 1 && result.ids[1] === 2);
+
+    result = log.serializers.folder({
+      getId: function() {return 1;},
+      name: 'inbox',
+      dtmf: '1'
+    });
+    assert(result.folder.id === 1 &&
+           result.folder.name === 'inbox' &&
+           result.folder.dtmf === '1');
+
+    result = log.serializers.folders([{
+      name: 'inbox'
+    }, {
+      name: 'old'
+    }]);
+    assert(result.names[0] === 'inbox' &&
+           result.names[1] === 'old');
+
+    result = log.serializers.mailbox({
+      getId: function() {return 1;},
+      mailboxNumber: '1',
+      mailboxName: 'mailbox'
+    });
+    assert(result.mailbox.id === 1 &&
+           result.mailbox.mailboxNumber === '1' &&
+           result.mailbox.mailboxName === 'mailbox');
+
+    result = log.serializers.messages([{
+      getId: function() {return 1;},
+    }, {
+      getId: function() {return 2;},
+    }]);
+    assert(result.ids[0] === 1 &&
+           result.ids[1] === 2);
 
     done();
   });
