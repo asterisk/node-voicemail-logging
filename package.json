@@ -1,6 +1,6 @@
 {
   "name": "voicemail-logging",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "logging for asterisk voicemail",
   "main": "lib/logging.js",
   "private": true,
