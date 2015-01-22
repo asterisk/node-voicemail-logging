@@ -39,12 +39,14 @@ var getMockConfig = function() {
 
       normal: {
         level: 'info',
-        path: './logs/info.log'
+        path: './logs/info.log',
+        stdout: true
       },
 
       error: {
         level: 'error',
-        path: './logs/error.log'
+        path: './logs/error.log',
+        stderr: true
       }
     }
   };
@@ -125,6 +127,28 @@ describe('voicemail logging', function() {
 
     assert(info.length === 2);
     assert(error.length === 2);
+
+    done();
+  });
+
+  it('should allow disabling stdout and stderr', function(done) {
+    var logger = require('../lib/logging.js');
+
+    var config = getMockConfig();
+    config.logging.normal.stdout = false;
+    config.logging.error.stderr = false;
+
+    var log = logger.create(config, 'test');
+
+    var info = log.streams.filter(function(stream) {
+      return stream.level === 'info';
+    });
+    var error = log.streams.filter(function(stream) {
+      return stream.level === 'error';
+    });
+
+    assert(info.length === 1);
+    assert(error.length === 1);
 
     done();
   });

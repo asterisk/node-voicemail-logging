@@ -38,7 +38,9 @@ var config = {
       // trace|debug|info
       level: 'info',
       // must have write access
-      path: '/dir/info.log'
+      path: '/dir/info.log',
+      // false to disable stdout
+      stdout: true
     },
 
     // error log configuration
@@ -46,7 +48,9 @@ var config = {
       // warn|error|fatal
       level: 'error',
       // must have write access
-      path: '/dir/error.log'
+      path: '/dir/error.log',
+      // false to disable stderr
+      stderr: true
     }
   }
 };
